@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using Ticketing.Backend.Domain.Entities;
 using Ticketing.Backend.Domain.Enums;
 
@@ -38,6 +39,34 @@ public static class SeedData
                 };
                 user.PasswordHash = passwordHasher.HashPassword(user, seed.Password);
                 context.Users.Add(user);
+            }
+        }
+
+        await context.SaveChangesAsync();
+
+        // Ensure technician profiles exist for technician users
+        var technicianUsers = await context.Users
+            .Where(u => u.Role == UserRole.Technician)
+            .ToListAsync();
+
+        foreach (var techUser in technicianUsers)
+        {
+            var existingTechnician = await context.Technicians
+                .FirstOrDefaultAsync(t => t.UserId == techUser.Id || t.Email == techUser.Email);
+
+            if (existingTechnician == null)
+            {
+                context.Technicians.Add(new Technician
+                {
+                    Id = Guid.NewGuid(),
+                    FullName = techUser.FullName,
+                    Email = techUser.Email,
+                    Phone = techUser.PhoneNumber,
+                    Department = techUser.Department,
+                    IsActive = true,
+                    CreatedAt = DateTime.UtcNow,
+                    UserId = techUser.Id
+                });
             }
         }
 
@@ -100,6 +129,10 @@ public static class SeedData
         var client1 = await context.Users.FirstAsync(u => u.Email == "client1@test.com");
         var client2 = await context.Users.FirstAsync(u => u.Email == "client2@test.com");
 
+        var technicianProfiles = await context.Technicians.ToListAsync();
+        var techProfile1 = technicianProfiles.FirstOrDefault(t => t.Email == tech1.Email);
+        var techProfile2 = technicianProfiles.FirstOrDefault(t => t.Email == tech2.Email);
+
         if (!context.Tickets.Any())
         {
             var tickets = new List<Ticket>
@@ -115,6 +148,7 @@ public static class SeedData
                     Status = TicketStatus.New,
                     CreatedByUserId = client1.Id,
                     AssignedToUserId = tech1.Id,
+                    TechnicianId = techProfile1?.Id,
                     CreatedAt = DateTime.UtcNow.AddDays(-2)
                 },
                 new()
@@ -128,6 +162,7 @@ public static class SeedData
                     Status = TicketStatus.InProgress,
                     CreatedByUserId = client2.Id,
                     AssignedToUserId = tech2.Id,
+                    TechnicianId = techProfile2?.Id,
                     CreatedAt = DateTime.UtcNow.AddDays(-1),
                     DueDate = DateTime.UtcNow.AddDays(2)
                 },
@@ -142,6 +177,7 @@ public static class SeedData
                     Status = TicketStatus.InProgress,
                     CreatedByUserId = client1.Id,
                     AssignedToUserId = tech1.Id,
+                    TechnicianId = techProfile1?.Id,
                     CreatedAt = DateTime.UtcNow.AddHours(-8)
                 },
                 new()
@@ -155,6 +191,7 @@ public static class SeedData
                     Status = TicketStatus.WaitingForClient,
                     CreatedByUserId = client2.Id,
                     AssignedToUserId = tech2.Id,
+                    TechnicianId = techProfile2?.Id,
                     CreatedAt = DateTime.UtcNow.AddDays(-5)
                 },
                 new()
@@ -168,6 +205,7 @@ public static class SeedData
                     Status = TicketStatus.Resolved,
                     CreatedByUserId = client2.Id,
                     AssignedToUserId = tech1.Id,
+                    TechnicianId = techProfile1?.Id,
                     CreatedAt = DateTime.UtcNow.AddDays(-3),
                     UpdatedAt = DateTime.UtcNow.AddDays(-1)
                 }

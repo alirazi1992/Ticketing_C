@@ -162,6 +162,42 @@ namespace Ticketing.Backend.Infrastructure.Data.Migrations
                     b.ToTable("Subcategories");
                 });
 
+            modelBuilder.Entity("Ticketing.Backend.Domain.Entities.Technician", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Department")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Technicians");
+                });
+
             modelBuilder.Entity("Ticketing.Backend.Domain.Entities.Ticket", b =>
                 {
                     b.Property<Guid>("Id")
@@ -196,6 +232,9 @@ namespace Ticketing.Backend.Infrastructure.Data.Migrations
                     b.Property<int?>("SubcategoryId")
                         .HasColumnType("INTEGER");
 
+                    b.Property<Guid?>("TechnicianId")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(300)
@@ -213,6 +252,8 @@ namespace Ticketing.Backend.Infrastructure.Data.Migrations
                     b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("SubcategoryId");
+
+                    b.HasIndex("TechnicianId");
 
                     b.ToTable("Tickets");
                 });
@@ -362,11 +403,18 @@ namespace Ticketing.Backend.Infrastructure.Data.Migrations
                         .HasForeignKey("SubcategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Ticketing.Backend.Domain.Entities.Technician", "Technician")
+                        .WithMany("AssignedTickets")
+                        .HasForeignKey("TechnicianId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("AssignedToUser");
 
                     b.Navigation("Category");
 
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("Technician");
 
                     b.Navigation("Subcategory");
                 });
@@ -390,6 +438,16 @@ namespace Ticketing.Backend.Infrastructure.Data.Migrations
                     b.Navigation("Ticket");
                 });
 
+            modelBuilder.Entity("Ticketing.Backend.Domain.Entities.Technician", b =>
+                {
+                    b.HasOne("Ticketing.Backend.Domain.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Ticketing.Backend.Domain.Entities.Category", b =>
                 {
                     b.Navigation("Subcategories");
@@ -400,6 +458,11 @@ namespace Ticketing.Backend.Infrastructure.Data.Migrations
             modelBuilder.Entity("Ticketing.Backend.Domain.Entities.Subcategory", b =>
                 {
                     b.Navigation("Tickets");
+                });
+
+            modelBuilder.Entity("Ticketing.Backend.Domain.Entities.Technician", b =>
+                {
+                    b.Navigation("AssignedTickets");
                 });
 
             modelBuilder.Entity("Ticketing.Backend.Domain.Entities.Ticket", b =>
