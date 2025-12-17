@@ -1,14 +1,42 @@
-# .NET build outputs
-**/bin/
-**/obj/
+# =========================
+# Node / Next.js (ROOT)
+# =========================
+node_modules/
+.next/
+tsconfig.tsbuildinfo
 
-# Logs
-*.log
+# =========================
+# Frontend (Next.js)
+# =========================
+frontend/node_modules/
+frontend/.next/
+frontend/tsconfig.tsbuildinfo
 
-# Env files
+# =========================
+# Backend (.NET)
+# =========================
+backend/**/bin/
+backend/**/obj/
+
+# =========================
+# Environment
+# =========================
 .env
 .env.local
+.env*.local
 
-# Next.js
-.next/
-node_modules/
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# IDE / OS
+# =========================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
